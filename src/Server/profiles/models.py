@@ -106,10 +106,16 @@ class Settings(models.Model):
 
 def profile_create_receiver(sender, instance, created, **kwargs):
     if created:
-        profile = Profile.objects.register(instance)
-        Settings.objects.get_or_create(profile=profile)
-        admins = list(User.objects.filter(is_superuser=True))
-        assign_user_profile(instance, profile, admins)
+        try:
+            profile = Profile.objects.register(instance)
+            settings = Settings()
+            settings.profile = profile
+            settings.save()
+            admins = list(User.objects.filter(is_superuser=True))
+            assign_user_profile(instance, profile, admins)
+        except Exception as e:
+            print(str(e))
+            pass
 
 
 post_save.connect(profile_create_receiver, sender=User)

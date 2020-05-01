@@ -5,14 +5,13 @@ from ..user.serializers import UserSerializer
 Comment = get_model("comments", "Comment")
 
 
-def comment_create_func(app_name="posts", model_type="post", slug=None, parent_id=None, user=None):
+def comment_create_func(model_type="post", slug=None, parent_id=None, user=None):
     class CommentCreateSerializer(ser.ModelSerializer):
         class Meta:
             model = Comment
-            fields = ('content',)
+            fields = ('content', 'comment_type', 'media')
 
         def __init__(self, **kwargs):
-            self.app_name = app_name
             self.model_type = model_type
             self.slug = slug
             self.parent_obj = None
@@ -24,7 +23,7 @@ def comment_create_func(app_name="posts", model_type="post", slug=None, parent_i
             super(CommentCreateSerializer, self).__init__(**kwargs)
 
         def validate(self, attrs):
-            model = ContentType.objects.get(app_label=app_name, model=self.model_type)
+            model = ContentType.objects.get(model=self.model_type)
             if model is None:
                 raise ser.ValidationError(
                     {"object": f"The {self.model_type} you are commenting on does no longer exist"})
@@ -32,14 +31,18 @@ def comment_create_func(app_name="posts", model_type="post", slug=None, parent_i
             obj = model.objects.get(slug=self.slug)
             if obj is None:
                 raise ser.ValidationError({f"{self.model_type}": "This object does not exist"})
-            if attrs["content"] == "":
-                raise ser.ValidationError({"content": "Please make a valid comment"})
+
             return attrs
 
         def create(self, validated_data):
             return Comment.objects.create_by_model_type(
-                app_label=self.app_name, slug=self.slug, content=validated_data["content"],
-                parent_obj=self.parent_obj, model_type=self.model_type, user=self.user
+                slug=self.slug,
+                content=validated_data["content"],
+                comment_type=validated_data["comment_type"],
+                media=validated_data["media"],
+                parent_obj=self.parent_obj,
+                model_type=self.model_type,
+                user=self.user
             )
 
     return CommentCreateSerializer

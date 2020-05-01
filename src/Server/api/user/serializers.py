@@ -48,3 +48,17 @@ class UserDiscussionSerializer(ser.ModelSerializer):
 
     def get_replies(self, obj):
         return obj.replies.all().count()
+
+
+class UserDisplaySerializer(ser.ModelSerializer):
+    avatar = ser.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ("username", "first_name", "last_name", "email", "avatar")
+
+    def get_avatar(self, obj):
+        try:
+            return obj.profile.avatar.url
+        except:
+            return None

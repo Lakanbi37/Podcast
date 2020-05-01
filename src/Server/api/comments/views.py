@@ -15,11 +15,10 @@ class CommentCreateAPIView(generics.CreateAPIView):
 
     def get_serializer_class(self):
         model_type = self.request.GET.get("model_type")
-        app_label = self.request.GET.get("app_label")
         slug = self.request.GET.get("slug")
         parent_id = self.request.GET.get("parent_id", None)
         return comment_create_func(
-            app_name=app_label, model_type=model_type, slug=slug,
+            model_type=model_type, slug=slug,
             parent_id=parent_id, user=self.request.user
         )
 

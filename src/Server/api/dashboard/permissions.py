@@ -21,10 +21,12 @@ class ObjectOwnerPerm(BasePermission):
 
 class IsCEO(BasePermission):
     message = msg
+    SAFE_METHODS = ['GET']
 
     def has_permission(self, request, view):
         user = request.user
-        return user.has_perm("profiles.c_e_o")
+        return bool(request.method in self.SAFE_METHODS or
+                    user.has_perm("profiles.c_e_o"))
 
 
 class IsManager(BasePermission):
@@ -32,21 +34,21 @@ class IsManager(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return user.has_perm("profiles.manager")
+        return bool(user.has_perm("profiles.manager"))
 
 
 class IsDirector(BasePermission):
     message = msg
 
     def has_permission(self, request, view):
-        return request.user.has_perm("profiles.director")
+        return bool(request.user.has_perm("profiles.director"))
 
 
 class IsSecretary(BasePermission):
     message = msg
 
     def has_permission(self, request, view):
-        return request.user.has_perm("profiles.secretary")
+        return bool(request.user.has_perm("profiles.secretary"))
 
 
 class IsPromoter(BasePermission):
